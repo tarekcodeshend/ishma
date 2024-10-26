@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Games</title>
+    <style>
+        /* General styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #3a3a5e);
+            color: #ffffff;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Menu button */
+        #menuToggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background-color: #ffcc00;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #1e1e2f;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        /* Sidebar menu */
+        #sideMenu {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            height: 100%;
+            width: 250px;
+            background-color: #2e2e3e;
+            padding-top: 60px;
+            transition: 0.3s;
+            box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+        }
+
+        #sideMenu a {
+            padding: 15px 25px;
+            text-decoration: none;
+            font-size: 1.2em;
+            color: #ffcc00;
+            display: block;
+            transition: 0.3s;
+        }
+
+        #sideMenu a:hover {
+            background-color: #ff5722;
+        }
+
+        /* Crash game modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 4;
+        }
+
+        .modal-content {
+            background: #1e1e2f;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            color: #ffcc00;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .modal h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .multiplier {
+            font-size: 3em;
+            color: #ff5722;
+            margin: 20px 0;
+        }
+
+        .game-button {
+            padding: 12px 24px;
+            font-size: 1em;
+            background-color: #ff5722;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: transform 0.2s ease, background-color 0.3s ease;
+        }
+
+        .game-button:hover {
+            background-color: #e64a19;
+            transform: scale(1.05);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5em;
+            color: #fff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menu toggle button -->
+    <div id="menuToggle">&#9776;</div>
+
+    <!-- Sidebar menu -->
+    <div id="sideMenu">
+        <a href="#">Home</a>
+        <a href="https://discord.com" target="_blank">Discord</a>
+        <a href="#game1">Game 1</a>
+        <a href="#game2">Game 2</a>
+        <a href="#game3">Game 3</a>
+        <a href="#" id="crashGameLink">Crash Game</a>
+    </div>
+
+    <!-- Modal for Crash game -->
+    <div class="modal" id="crashGameModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModal">&times;</span>
+            <h2>Crash Game</h2>
+            <div class="multiplier" id="multiplier">1.00x</div>
+            <button class="game-button" id="cashOutButton">Cash Out</button>
+        </div>
+    </div>
+
+    <script>
+        const menuToggle = document.getElementById("menuToggle");
+        const sideMenu = document.getElementById("sideMenu");
+
+        menuToggle.addEventListener("click", () => {
+            if (sideMenu.style.left === "0px") {
+                sideMenu.style.left = "-250px";
+            } else {
+                sideMenu.style.left = "0px";
+            }
+        });
+
+        const crashGameLink = document.getElementById("crashGameLink");
+        const crashGameModal = document.getElementById("crashGameModal");
+        const closeModal = document.getElementById("closeModal");
+        const multiplierElement = document.getElementById("multiplier");
+        const cashOutButton = document.getElementById("cashOutButton");
+
+        let multiplier = 1.0;
+        let interval;
+        let gameRunning = false;
+
+        // Show modal when Crash Game link is clicked
+        crashGameLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            crashGameModal.style.display = "flex";
+            startCrashGame();
+        });
+
+        // Close modal
+        closeModal.addEventListener("click", () => {
+            crashGameModal.style.display = "none";
+            resetGame();
+        });
+
+        // Start Crash Game
+        function startCrashGame() {
+            multiplier = 1.0;
+            gameRunning = true;
+            multiplierElement.textContent = `${multiplier.toFixed(2)}x`;
+
+            interval = setInterval(() => {
+                multiplier += Math.random() * 0.1;
+                multiplierElement.textContent = `${multiplier.toFixed(2)}x`;
+
+                if (Math.random() < 0.02) { // 2% chance of crashing each interval
+                    gameRunning = false;
+                    clearInterval(interval);
+                    multiplierElement.textContent = `Crashed at ${multiplier.toFixed(2)}x!`;
+                    cashOutButton.disabled = true;
+                }
+            }, 500);
+        }
+
+        // Cash Out
+        cashOutButton.addEventListener("click", () => {
+            if (gameRunning) {
+                clearInterval(interval);
+                multiplierElement.textContent = `You cashed out at ${multiplier.toFixed(2)}x!`;
+                gameRunning = false;
+                cashOutButton.disabled = true;
+            }
+        });
+
+        // Reset game
+        function resetGame() {
+            clearInterval(interval);
+            gameRunning = false;
+            multiplier = 1.0;
+            multiplierElement.textContent = `1.00x`;
+            cashOutButton.disabled = false;
+        }
+    </script>
+</body>
+</html>
